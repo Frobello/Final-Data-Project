@@ -1,0 +1,101 @@
+---
+title: "FINAL PROJECT: INFANT MORTALITY"
+author: "Franco Robello"
+format: html
+editor: visual
+---
+
+[Source](https://www.openintro.org/data/index.php?data=census.2010)
+
+## Data
+
+```{r}
+library(tidyverse)
+library(effects)
+library(usmap)
+library(plotly)
+
+InfMort <- read_csv("data/census.2010.csv")
+```
+
+## Questions
+
+Does the number of doctors affect infant mortality rate?
+
+Does state have an effect on infant mortality?
+
+### Descriptive Analysis
+
+Required histogram - doctors
+
+```{r}
+InfMort |>
+  ggplot(aes(x = doctors)) +
+  geom_histogram(bins = 51)
+```
+
+The average amount of doctors per state is mainly between 200 and 300, being skewed to the right due to a major outlier.
+
+Required boxplot - infant mortality
+
+```{r}
+InfMort |>
+  ggplot(aes(x = inf.mort, y = state)) +
+  geom_boxplot()
+```
+
+Unfortunately, the box plot is not very readable due to both having 51 instances that need to be displayed, though it does show the mortality rates being scattered with no particular pattern.
+
+*Does the number of doctors affect infant mortality rate?*
+
+Scatterplot
+
+```{r}
+InfMort |>
+  ggplot(aes(x = doctors, y = inf.mort)) +
+  geom_point()
+```
+
+The scatter plot is much more useful. Most of the points group up near each other with only one outlier. Dispite many points having around the same amount of doctors, their infant mortality rate don't follow. This would indicate that the number of doctors does not affect infant mortality rate.
+
+I have also made a linear model of infant mortality by doctors, and turns out our p-value is above 0.05, indicating that this isn't a reliable variable to go off of.
+
+```{r}
+Mortmodel_doc <- lm(inf.mort ~ doctors,
+                    data = InfMort)
+summary(Mortmodel_doc)
+```
+
+### Inferential Statistics
+
+*Does state have an effect on infant mortality?*
+
+When I asked this question, I was thinking along the lines of state regions. Do Northern states have less infant mortality than others? Do Southern states have high rates?
+
+I've attempted to use linear regression this question, but the results are not very telling. It tells nothing but the infant mortality rate in relation to Alabama's rate (the intercept), so I instead used a map to visualize states and their mortality rates.
+
+```{r}
+Mortmodel <- lm(inf.mort ~ state,
+            data = InfMort)
+summary(Mortmodel)
+```
+
+Interactable US Map
+
+```{r}
+g <- plot_usmap(data = InfMort,
+           values = "inf.mort") + 
+  scale_fill_continuous(low = "green", high = "red")
+
+ggplotly(g)
+```
+
+Using the map we can visualize the infant mortality rate for each state, and by extension, each state region. While there is some deeper tones, and thus higher rates, in southern regions it isn't isolated enough to be a trend of the area. Most states along the east coast have similar mortality rates. including southern ones. The major outliers here are Mississippi and The District of Colombia (Washington DC) .
+
+### Data summary
+
+Overall, I cannot say with confidence that neither doctors nor state have a noticeable effect on infant mortality. The histogram showed that most states hovered around the same amount of doctors, yet the bar graph showed the infant mortality rates to be scattered.
+
+On the state side, the map hadn't shown any realiable trends or patterns either. Each state, barring the District of Colombia, floated around the same infant mortality rate with not much difference.
+
+In the end, it would appear that infant mortality is an independent variable when being compared to both the number of doctors per state as well as the state itself.
